@@ -1,0 +1,26 @@
+version: '2'
+
+networks:
+  eatigo:
+    driver: bridge
+
+services:
+  redis:
+    image: 'bitnami/redis:latest'
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    ports:
+      - 6379:6379
+    networks:
+      - eatigo
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "8000:8000"
+    environment: 
+      - GOOGLE_MAP_API_KEY=${GOOGLE_MAP_API_KEY}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+    networks:
+      - eatigo
