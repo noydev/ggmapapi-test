@@ -1,17 +1,34 @@
-# syntax=docker/dockerfile:1
+FROM golang:alpine
 
-FROM golang:1.16-alpine
+# Set necessary environmet variables needed for our image
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
 
-WORKDIR /app
+# Move to working directory /build
+WORKDIR /build
 
-COPY go.mod ./
-COPY go.sum ./
+# Copy and download dependency using go mod
+COPY go.mod .
+COPY go.sum .
 RUN go mod download
 
-COPY *.go ./
+# Copy the code into the container
+COPY . .
 
-RUN go build -o /docker-gs-ping
+# Build the application
+RUN go build -o main .
 
-EXPOSE 8080
+# Move to /dist directory as the place for resulting binary folder
+WORKDIR /dist
 
-CMD [ "/docker-gs-ping" ]
+# Copy binary from build to main folder
+RUN cp /build/main .
+RUN cp -r /build/config ./config
+
+# Export necessary port
+EXPOSE 8000
+
+# Command to run when starting the container
+CMD ["/dist/main"]
